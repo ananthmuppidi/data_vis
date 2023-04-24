@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+
+
+
+<!-- Create a div where the graph will take place -->
+<div id="my_dataviz"></div>
+<script>
+    let colorArray = {
+        "Hispanic": "#7AA874",
+        "Black": "F7DB6A",
+        "Multiracial": "#EBB02D",
+        "Middle Eastern": "#D864A9",
+        "Asian": "#245953"
+    }
+    function sum(arr) {
+        return arr.reduce(function (a, b) {
+            return a + b;
+        }, 0);
+    }
+
+
+
+    // set the dimensions and margins of the graph
+    var margin = { top: 30, right: 30, bottom: 70, left: 60 },
+        width = 600 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
+
+    // append the svg object to the body of the page
+    var svg = d3.select("body")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+
+
+
+
+
+    // Load data from CSV file
+    d3.csv("http://localhost:8000/data/oscar_demographics.csv", function (data) {
+        // Nest the data by category and race_ethnicity
+        var nestedData = d3.nest()
+            .key(function (d) { return d.award; })
+            .key(function (d) { return d.race_ethnicity; })
+            .rollup(function (v) { return v.length; })
+            .entries(data);
+
+        var x = d3.scaleBand()
+            .range([0, width])
+            .domain(nestedData.map(function (d) { return d.key; }))
+            .padding(0.2);
+
+        var y = d3.scaleLinear()
+            .range([height, 0])
+            .domain([0, 100]);
+
+        // Add the x-axis and y-axis
+        svg.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x));
+
+        svg.append("g")
+            .call(d3.axisLeft(y));
+
+        // Log the results to the console for verification
+        for (let i = 0; i < nestedData.length; i++) {
+            let currentHeight = 0;
+            let total = sum(nestedData[i].values.filter(item => item.key !== "White").map(item => item.value))
+            console.log(total)
+            nestedData[i].values.forEach((element, j) => {
+
+                if (element.key === "White") {
+                    return;
+                }
+                svg.append("rect")
+                    .attr("class", "bar")
+                    .attr("x", 40 + i * 100)
+                    .attr("width", 30)
+                    .attr("y", height - currentHeight - element.value * height / total)
+                    .attr("height", element.value * height / total)
+                    .attr("fill", colorArray[element.key])
+                currentHeight += element.value * height / total
+            });
+
+        }
+    });
+
+
+
+</script>

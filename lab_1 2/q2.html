@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+    /* set the CSS */
+
+    .scatter {
+        fill: steelblue;
+    }
+
+    .svg {
+        padding-left: 40%;
+        padding-top: 10%;
+    }
+
+    /* Hide the radio buttons */
+    .radio-container input {
+
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    /* Style the radio containers */
+    .radio-container {
+
+        display: inline-block;
+        position: relative;
+        padding-left: 25px;
+        margin-bottom: 12px;
+        cursor: pointer;
+        font-size: 16px;
+        user-select: none;
+        font-family: Arial, sans-serif;
+        /* change font family */
+    }
+
+    /* Create the radio checkmarks */
+    .radio-checkmark {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 20px;
+        width: 20px;
+        border: 1px solid #ccc;
+        /* add border outline */
+        border-radius: 50%;
+        background-color: #eee;
+    }
+
+    /* On mouse-over, add a grey background color */
+    .radio-container:hover input~.radio-checkmark {
+        background-color: #ccc;
+    }
+
+    /* When the radio button is checked, add a blue background color */
+    .radio-container input:checked~.radio-checkmark {
+        background-color: blue;
+    }
+
+    /* When the radio button is checked, change the text color */
+    .radio-container input:checked~span {
+        color: #fff;
+    }
+</style>
+
+<body>
+    <div class="radio-group">
+        <label class="radio-container">
+            <input type="radio" name="radio-option" value="2011">
+            <span class="radio-checkmark" id="2011"></span>
+            2011
+        </label>
+        <label class="radio-container">
+            <input type="radio" name="radio-option" value="2012" id="2012">
+            <span class="radio-checkmark"></span>
+            2012
+        </label>
+        <label class="radio-container">
+            <input type="radio" name="radio-option" value="2013" id="2013">
+            <span class="radio-checkmark"></span>
+            2013
+        </label>
+    </div>
+
+    <!-- load the d3.js library -->
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script>
+
+        let selectedYear = 2011;
+
+        // Set graph margins and dimensions
+        var margin = { top: 20, right: 20, bottom: 30, left: 40 },
+            width = 700 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
+
+        // Set ranges
+        var x = d3.scaleLinear()
+            .range([0, width])
+        var y = d3.scaleLinear()
+            .range([height, 0]);
+        var svg = d3.select("body").append("svg")
+            .attr("class", "svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
+
+        // Get data
+
+
+        const option1 = document.querySelector('input[value="2011"]');
+        const option2 = document.querySelector('input[value="2012"]');
+        const option3 = document.querySelector('input[value="2013"]');
+
+        option1.addEventListener('change', () => {
+            selectedYear = 2011;
+            svg.selectAll("*").remove();
+            d3.csv("http://localhost:8000/data/yearwise.csv").then(function (data) {
+
+
+                // Scale the range of the data in the domains
+                x.domain([0, 100]);
+                y.domain([0, 100]);
+
+                // Append circles for scatter chart
+                svg.selectAll(".scatter")
+                    .data(data)
+                    .enter().append("circle")
+                    .attr("class", "scatter")
+                    .attr("cx", function (d) { return x(d.X2011); })
+                    .attr("cy", function (d) { return y(d.Y2011); })
+                    .attr("r", function (d) { return d.R2011 })
+                    .attr("fill", "#00aa88");
+
+                // Add x axis
+                svg.append("g")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(d3.axisBottom(x));
+
+                // Add y axis
+                svg.append("g")
+                    .call(d3.axisLeft(y));
+
+            });
+        });
+
+        option2.addEventListener('change', () => {
+            selectedYear = 2012;
+            svg.selectAll("*").remove();
+            d3.csv("http://localhost:8000/data/yearwise.csv").then(function (data) {
+
+
+                // Scale the range of the data in the domains
+                x.domain([0, 100]);
+                y.domain([0, 100]);
+
+                // Append circles for scatter chart
+                svg.selectAll(".scatter")
+                    .data(data)
+                    .enter().append("circle")
+                    .attr("class", "scatter")
+                    .attr("cx", function (d) { return x(d.X2012); })
+                    .attr("cy", function (d) { return y(d.Y2012); })
+                    .attr("r", function (d) { return d.R2012 })
+                    .attr("fill", "#00aa88");
+
+                // Add x axis
+                svg.append("g")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(d3.axisBottom(x));
+
+                // Add y axis
+                svg.append("g")
+                    .call(d3.axisLeft(y));
+
+            });
+        });
+        option3.addEventListener('change', () => {
+            selectedYear = 2011;
+            svg.selectAll("*").remove();
+            d3.csv("http://localhost:8000/data/yearwise.csv").then(function (data) {
+                
+
+                // Scale the range of the data in the domains
+                x.domain([0, 100]);
+                y.domain([0, 100]);
+
+                // Append circles for scatter chart
+                svg.selectAll(".scatter")
+                    .data(data)
+                    .enter().append("circle")
+                    .attr("class", "scatter")
+                    .attr("cx", function (d) { return x(d.X2013); })
+                    .attr("cy", function (d) { return y(d.Y2013); })
+                    .attr("r", function (d) { return d.R2013 })
+                    .attr("fill", "#00aa88");
+
+                // Add x axis
+                svg.append("g")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(d3.axisBottom(x));
+
+                // Add y axis
+                svg.append("g")
+                    .call(d3.axisLeft(y));
+
+            });
+        });
+
+
+
+    </script>
+</body>

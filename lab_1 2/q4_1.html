@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<!-- Create a div where the graph will take place -->
+<div id="my_dataviz"></div>
+<script>
+
+// Set the dimensions and margins of the graph
+var margin = {top: 20, right: 30, bottom: 40, left: 90},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+// Append the svg object to the body of the page
+var svg = d3.select("body")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+// Load the data from the CSV file
+d3.csv("http://localhost:8000/data/oscar_demographics.csv", function(data) {
+
+  // Group the data by race and count the number of occurrences
+  var nestedData = d3.nest()
+    .key(function(d) { return d.race_ethnicity; })
+    .rollup(function(v) { return v.length; })
+    .entries(data);
+
+  // Set the x and y scales
+  var x = d3.scaleBand()
+    .range([0, width])
+    .domain(nestedData.map(function(d) { return d.key; }))
+    .padding(0.2);
+
+  var y = d3.scaleLinear()
+    .range([height, 0])
+    .domain([0, d3.max(nestedData, function(d) { return d.value; })]);
+
+  // Add the x-axis and y-axis
+  svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
+
+  svg.append("g")
+      .call(d3.axisLeft(y));
+
+  // Add the bars
+  svg.selectAll("rect")
+    .data(nestedData)
+    .enter()
+    .append("rect")
+    .attr("x", function(d) { return x(d.key); })
+    .attr("y", function(d) { return y(d.value); })
+    .attr("width", x.bandwidth())
+    .attr("height", function(d) { return height - y(d.value); })
+    .attr("fill", "steelblue");
+
+  // Add the bar labels
+  svg.selectAll(".bar-label")
+    .data(nestedData)
+    .enter()
+    .append("text")
+    .attr("class", "bar-label")
+    .attr("x", function(d) { return x(d.key) + x.bandwidth() / 2; })
+    .attr("y", function(d) { return y(d.value) - 5; })
+    .text(function(d) { return d.value; })
+    .style("text-anchor", "middle")
+    .style("font-size", "12px");
+
+  // Add the x-axis label
+  svg.append("text")
+      .attr("x", width / 2)
+      .attr("y", height + margin.bottom - 5)
+      .style("text-anchor", "middle")
+      .text("Race");
+
+  // Add the y-axis label
+  svg.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("x", 0 - height / 2)
+      .attr("y", 0 - margin.left)
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+      .text("Frequency");
+
+});
+
+    
+    </script>
